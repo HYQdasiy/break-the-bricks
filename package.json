@@ -1,0 +1,29 @@
+{
+  "name": "break-the-bricks",
+  "version": "1.0.0",
+  "description": "打砖块的游戏，原生js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaoScut/break-the-bricks.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MaoScut/break-the-bricks/issues"
+  },
+  "homepage": "https://github.com/MaoScut/break-the-bricks#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "css-loader": "^0.28.7",
+    "style-loader": "^0.19.0",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.2",
+    "wepback": "^1.0.0"
+  }
+}
