@@ -48,21 +48,21 @@ function Ball() {
   }
   return o;
 }
+function Draw(painter) {
+  return function(element) {
+    painter.fillRect(element.x, element.y, element.width, element.height);  
+  }
+}
 function Game(board, ball) {
   const canvas = $('#canvas');
-  const boardPainter = canvas.getContext('2d');
-   ballPainter = canvas.getContext('2d');
-  boardPainter.fillRect(board.x, board.y, board.width, board.height);
-  ballPainter.fillRect(ball.x, ball.y, ball.width, ball.height);
+  const painter = canvas.getContext('2d');
+  const draw = Draw(painter);
+  draw(board);
+  draw(ball);
   const keysAction = {};
   const keysDown = {};
   function addKeyAction(key, cb) {
     keysAction[key] = cb;
-  }
-  function update() {
-
-    log('移动后重画球的四个参数', ball.x, ball.y, ball.width, ball.height);
-    // ballPainter.fillRect(ball.x, ball.y, ball.width, ball.height);
   }
   function collided(board, ball) {
     if (ball.x >= board.x && ball.x <= board.x + board.width && ball.y + ball.height > board.y ||
@@ -75,18 +75,17 @@ function Game(board, ball) {
   function onkeydown(key) {
     if (keysAction[key]) {
       keysAction[key]();
-      update();
     }
   }
   function start() {
     ball.fire();
     setInterval(() => {
-      boardPainter.clearRect(0, 0, 300, 400);
-      boardPainter.fillRect(board.x, board.y, board.width, board.height);
+      // 这里是整个画布清除，一开始尝试着单独清除球，但是总有边框没清除掉，不止为什么
+      painter.clearRect(0, 0, 300, 400);
+      draw(board);
       if (collided(board, ball)) ball.reboundY();
-      // collided(board, ball)
       ball.move();
-      ballPainter.fillRect(ball.x, ball.y, ball.width, ball.height);
+      draw(ball);
     }, 1000 / 30);
   }
   return {
@@ -94,27 +93,19 @@ function Game(board, ball) {
     addKeyAction,
     keysAction,
     keysDown,
-    update,
     start,
   }
 }
-let timer = [];
 function main() {
   const board = Board();
-   ball = Ball();
+  const ball = Ball();
   const game = Game(board, ball);
   game.addKeyAction('ArrowLeft', board.moveLeft);
   game.addKeyAction('ArrowRight', board.moveRight);
   game.addKeyAction('f', game.start);
 
   document.addEventListener('keydown', (e) => {
-    log('keydown')
-    log(e.key)
     game.onkeydown(e.key);
   });
-  // document.addEventListener('keyup', (e) => {
-  //   log('keyup');
-  //   game.onkeyup(e.key);
-  // });
 }
 main();
