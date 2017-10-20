@@ -2,23 +2,20 @@ const log = console.log.bind(console);
 function $(selector) {
   return document.querySelector(selector);
 }
-function Board(width = 150, height = 10) {
-  const o = {
-    x: 0,
-    y: 390,
-    width,
-    height,
-    step: 10,
-  };
-  o.moveLeft = () => {
-    o.x -= o.step;
-    if (o.x < 0) o.x = 0;
-  }
-  o.moveRight = () => {
-    o.x += o.step;
-    if (o.x + o.width > 300) o.x = 300 - o.width;
-  }
-  return o;
+function Board(width = 150, height = 10, speed = 10) {
+  this.x = 0;
+  this.y = 390;
+  this.width = width;
+  this.height = height;
+  this.speed = speed;
+}
+Board.prototype.moveLeft = function() {
+  this.x -= this.speed;
+  if (this.x < 0) this.x = 0;
+};
+Board.prototype.moveRight = function() {
+  this.x += this.speed;
+  if (this.x + this.width > 300) this.x = 300 - this.width;
 }
 function Ball() {
   const o = {
@@ -97,11 +94,11 @@ function Game(board, ball) {
   }
 }
 function main() {
-  const board = Board();
+  const board = new Board();
   const ball = Ball();
   const game = Game(board, ball);
-  game.addKeyAction('ArrowLeft', board.moveLeft);
-  game.addKeyAction('ArrowRight', board.moveRight);
+  game.addKeyAction('ArrowLeft', board.moveLeft.bind(board));
+  game.addKeyAction('ArrowRight', board.moveRight.bind(board));
   game.addKeyAction('f', game.start);
 
   document.addEventListener('keydown', (e) => {
