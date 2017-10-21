@@ -20,11 +20,11 @@ Board.prototype.moveRight = function() {
 function Ball() {
   const o = {
     x: 100,
-    y: 200,
+    y: 300,
     width: 50,
     height: 25,
-    stepX: 5,
-    stepY: 5,
+    stepX: 3,
+    stepY: 3,
     fired: false,
     alive: true,
   };
@@ -45,17 +45,29 @@ function Ball() {
   }
   return o;
 }
+function Brick(x, y) {
+  this.x = x;
+  this.y = y;
+  this.alive = true;
+  this.width = 50;
+  this.height = 25;
+}
 function Draw(painter) {
   return function(element) {
-    painter.fillRect(element.x, element.y, element.width, element.height);  
+    if (Array.isArray(element)) {
+      element.forEach(e => e.alive ? painter.fillRect(e.x, e.y, e.width, e.height) : null);
+    } else {
+      painter.fillRect(element.x, element.y, element.width, element.height);  
+    }
   }
 }
-function Game(board, ball) {
+function Game(board, ball, bricks) {
   const canvas = $('#canvas');
   const painter = canvas.getContext('2d');
   const draw = Draw(painter);
   draw(board);
   draw(ball);
+  draw(bricks)
   const keysAction = {};
   const keysDown = {};
   function addKeyAction(key, cb) {
@@ -69,6 +81,39 @@ function Game(board, ball) {
     }
     return false;
   }
+  function ballHitBrick(ball, brick) {
+    if (!brick.alive) return 0;
+    const ballLeftTop = [ball.x, ball.y]
+    const ballRightTop = [ball.x + ball.width, ball.y];
+    const ballLeftBottom = [ball.x, ball.y + ball.height];
+    const ballRightBottom = [ball.x + ball.width, ball.y + ball.height];
+    const tmpArr = [ballLeftTop, ballRightTop, ballLeftBottom, ballRightBottom];
+    // if (ball.x > brick.x && ball.x< brick.x + brick.width || ball.x + ball.width > brick.x && ball.x + ball.width < brick.x + brick.width) {
+    //   if (ball.y >= brick.y && ball.y <= brick.y + brick.height || ball.y + ball.height >= brick.y && ball.y + ball.height <= brick.y + brick.height) {
+    //     // 上下相撞
+    //     log(1)
+    //     return 1;
+    //   }
+    // }
+    // if (ball.y > brick.y && ball.y < brick.y + brick.height || ball.y + ball.height > brick.y && ball.y + ball.height < brick.y + brick.height) {
+    //   if (ball.x > brick.x && ball.x< brick.x + brick.width || ball.x + ball.width > brick.x && ball.x + ball.width < brick.x + brick.width) {
+    //     // 左右相撞
+    //     log(2)
+    //     return 2;
+    //   }
+    // }
+    const index = tmpArr.findIndex(([x, y]) => {
+      return x > brick.x && x < brick.x + brick.width && y > brick.y && y < brick.y + brick.height;
+    });
+    if (index === -1) return 0;
+    if (index === 1 || index === 3) {
+      if (tmpArr[index][0] - brick.x > tmpArr[index][1] - brick.y) return 1;
+      return 2;
+    } else {
+      if (brick.x + brick.width - tmpArr[index][0] > brick.y + brick.height - tmpArr[index[1]]) return 1;
+      return 2;
+    }
+  }
   function onkeydown(key) {
     if (keysAction[key]) {
       keysAction[key]();
@@ -81,9 +126,20 @@ function Game(board, ball) {
       painter.clearRect(0, 0, 300, 400);
       draw(board);
       if (collided(board, ball)) ball.reboundY();
+      bricks.forEach((b) => {
+        const hitSituation = ballHitBrick(ball,b);
+        if (hitSituation === 1) {
+          b.alive = false;
+          ball.reboundY();
+        } else if (hitSituation === 2) {
+          b.alive = false;
+          ball.reboundX();
+        }
+      })
+      draw(bricks);
       ball.move();
       draw(ball);
-    }, 1000 / 30);
+    }, 1000 / 50);
   }
   return {
     onkeydown,
@@ -96,7 +152,14 @@ function Game(board, ball) {
 function main() {
   const board = new Board();
   const ball = Ball();
-  const game = Game(board, ball);
+  const bricks = [];
+  for (let i = 0;i < 3; i++) {
+    bricks.push(new Brick(i * 100, 100));
+  }
+  for (let i = 0;i < 3; i++) {
+    bricks.push(new Brick(i * 100, 200));
+  }
+  const game = Game(board, ball, bricks);
   game.addKeyAction('ArrowLeft', board.moveLeft.bind(board));
   game.addKeyAction('ArrowRight', board.moveRight.bind(board));
   game.addKeyAction('f', game.start);
